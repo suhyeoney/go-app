@@ -2,8 +2,8 @@ new Vue({
     el: '#app',
 
     data: {
-        ws: null,
-        newMsg: '',
+        websocket: null,
+        newMessage: '',
         chatContent: '',
         email: null,
         username: null,
@@ -11,14 +11,14 @@ new Vue({
     },
     created: function() {
         var self = this;
-        this.ws = new WebSocket('ws://' + window.location.host + '/ws');
-        this.ws.addEventListener('message', function(e) {
-            var msg = JSON.parse(e.data);
+        this.websocket = new WebSocket('ws://' + window.location.host + '/ws');
+        this.websocket.addEventListener('message', function(e) {
+            var message = JSON.parse(e.data);
             self.chatContent += '<div class="chip">'
-                + '<img src="' + self.gravatarURL(msg.email) + '">'
-                + msg.username
+                + '<img src="' + self.gravatarURL(message.email) + '">'
+                + message.username
                 + '</div>'
-                + msg.message + '<br/>';
+                + message.message + '<br/>';
 
             var element = document.getElementById('chat-messages');
             element.scrollTop = element.scrollHeight;
@@ -26,25 +26,25 @@ new Vue({
     },
     methods: {
         send: function () {
-            if (this.newMsg != '') {
-                this.ws.send(
+            if (this.newMessage != '') {
+                this.websocket.send(
                     JSON.stringify({
                             email: this.email,
                             username: this.username,
-                            message: $('<p>').html(this.newMsg).text()
+                            message: $('<p>').html(this.newMessage).text()
                         }
                     ));
-                this.newMsg = '';
+                this.newMessage = '';
             }
         },
         join: function () {
             if (!this.email) {
                 Materialize.toast('You must enter an email', 2000);
-                return
+                return;
             }
             if (!this.username) {
                 Materialize.toast('You must choose a username', 2000);
-                return
+                return;
             }
             this.email = $('<p>').html(this.email).text();
             this.username = $('<p>').html(this.username).text();

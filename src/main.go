@@ -46,15 +46,15 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	clients[ws] = true
 
 	for {
-		var msg Message
-		err := ws.ReadJSON(&msg)
+		var message Message
+		err := ws.ReadJSON(&message)
 		if err != nil {
 			log.Printf("error : %v", err)
 			delete(clients, ws)
 			break
 		}
 		// <- 연산자를 통해 브로드캐스트 채널로 전송
-		broadcast <- msg
+		broadcast <- message
 	}
 }
 
@@ -62,9 +62,9 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 // 커넥션 핸들러에서 처리하고 있는 클라이언트 중 하나가 메시지를 보내면 이를 꺼내어 현재 연결된 모든 클라이언트에게 메시지를 보냄
 func handleMessages() {
 	for {
-		msg := <-broadcast
+		message := <-broadcast
 		for client := range clients {
-			err := client.WriteJSON(msg)
+			err := client.WriteJSON(message)
 			if err != nil {
 				log.Printf("error : %v", err)
 				client.Close()
@@ -81,8 +81,8 @@ go 키워드 : 고루틴 (GoRoutine). GO 런타임이 관리하는 경량 / 논�
 > 브로드캐스트 채널에 수신된 메시지를 꺼낼 때에는 비동기적 호출 필요
 **/
 func main() {
-	fs := http.FileServer(http.Dir("./public"))
-	http.Handle("/", fs)
+	fileServer := http.FileServer(http.Dir("./public"))
+	http.Handle("/", fileServer)
 	http.HandleFunc("/ws", handleConnections)
 	go handleMessages()
 	log.Println("HTTP Server started on Port 8080")
